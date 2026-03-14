@@ -264,7 +264,7 @@ function toast(msg,ms=4000){
 }
 
 let _cb=null;
-function confirm2(t,m,cb){document.getElementById('conf-title').textContent=t;document.getElementById('conf-msg').textContent=m;document.getElementById('conf-ov').classList.add('open');_cb=cb;}
+function showConfirm(t,m,cb){document.getElementById('conf-title').textContent=t;document.getElementById('conf-msg').textContent=m;document.getElementById('conf-ov').classList.add('open');_cb=cb;}
 function confYes(){closeConf();if(_cb)_cb();}
 function closeConf(){document.getElementById('conf-ov').classList.remove('open');_cb=null;}
 
@@ -404,7 +404,8 @@ async function toggleHL(id){
 
 function confirmDel(id){
   const a=(_data.articles||[]).find(x=>x.id===id);
-  confirm2('Hapus Artikel',`Hapus "${a?.title?.substring(0,50)||id}..."? Tidak bisa dikembalikan.`,()=>deleteArt(id));
+  const judul=a?a.title.substring(0,50):id;
+  if(window.confirm('Hapus artikel "'+judul+'"? Tidak bisa dikembalikan.')){deleteArt(id);}
 }
 
 async function deleteArt(id){
@@ -425,7 +426,7 @@ async function loadHighlights(){
       <div class="hlcard">
         <div class="hlnum">${i+1}</div>
         <div class="hlinfo"><div class="hltitle">${a.title}</div><div class="hlmeta">${a.author} · ${a.topic||''}</div></div>
-        <button class="ab rd" onclick="toggleHL('${a.id}')" style="border-color:#f87171;color:#f87171;">Hapus</button>
+        <button class="ab rd" onclick="confirmDelHL('${a.id}')" style="border-color:#f87171;color:#f87171;">🗑️ Hapus</button>
       </div>`).join('');
   }catch(e){toast('Gagal memuat sorotan.');}
 }
@@ -454,6 +455,14 @@ async function uploadArt(isDraft){
     initDash();
     toast(isDraft?'📝 Draft disimpan.':'🌐 Artikel dipublikasikan! Langsung tampil di halaman publik.');
   }catch(e){toast('Gagal upload artikel.');}
+}
+
+function confirmDelHL(id){
+  const a=(_data.articles||[]).find(x=>x.id===id);
+  const judul = a ? a.title.substring(0,50) : id;
+  if(window.confirm('Hapus "'+judul+'" dari sorotan?')){
+    toggleHL(id);
+  }
 }
 </script>
 </body>
