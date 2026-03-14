@@ -1230,28 +1230,28 @@
       <h2 class="section-title">Kirim Artikel</h2>
     </div>
     <div class="submit-grid">
-      <form class="submit-form" onsubmit="submitArticle(event)">
+      <form class="submit-form" id="article-form" onsubmit="submitArticle(event)">
         <div class="form-row">
           <div class="form-group">
             <label>Nama Lengkap *</label>
-            <input type="text" id="f-name" placeholder="Dr. / M.A. / S.H. ..." required />
+            <input type="text" name="nama_lengkap" id="f-name" placeholder="Dr. / M.A. / S.H. ..." required />
           </div>
           <div class="form-group">
             <label>Email Korespondensi *</label>
-            <input type="email" id="f-email" placeholder="nama@institusi.ac.id" required />
+            <input type="email" name="email" id="f-email" placeholder="nama@institusi.ac.id" required />
           </div>
         </div>
         <div class="form-group">
           <label>Afiliasi Institusi *</label>
-          <input type="text" id="f-affiliation" placeholder="Universitas / Lembaga Penelitian" required />
+          <input type="text" name="afiliasi" id="f-affiliation" placeholder="Universitas / Lembaga Penelitian" required />
         </div>
         <div class="form-group">
           <label>Judul Artikel *</label>
-          <input type="text" id="f-title" placeholder="Tulis judul lengkap artikel Anda" required />
+          <input type="text" name="judul_artikel" id="f-title" placeholder="Tulis judul lengkap artikel Anda" required />
         </div>
         <div class="form-group">
           <label>Fokus Tematik *</label>
-          <select id="f-topic" required>
+          <select name="fokus_tematik" id="f-topic" required>
             <option value="">— Pilih bidang kajian —</option>
             <option>Filsafat Hukum</option>
             <option>Hukum Konstitusi</option>
@@ -1263,16 +1263,16 @@
         </div>
         <div class="form-group">
           <label>Abstrak *</label>
-          <textarea id="f-abstract" placeholder="Abstrak artikel (150–250 kata)" required></textarea>
+          <textarea name="abstrak" id="f-abstract" placeholder="Abstrak artikel (150–250 kata)" required></textarea>
         </div>
         <div class="form-group">
           <label>Kata Kunci * (pisahkan dengan titik koma)</label>
-          <input type="text" id="f-keywords" placeholder="hukum konstitusi; demokrasi; filsafat" required />
+          <input type="text" name="kata_kunci" id="f-keywords" placeholder="hukum konstitusi; demokrasi; filsafat" required />
         </div>
         <div class="form-group">
-          <label>Upload Naskah * (.docx)</label>
+          <label>Upload Naskah * (.docx / .pdf)</label>
           <div class="file-drop" id="file-drop-area">
-            <input type="file" id="f-file" accept=".docx,.pdf" />
+            <input type="file" name="naskah" id="f-file" accept=".docx,.pdf" />
             <div class="file-drop-icon">📄</div>
             <div class="file-drop-text" id="file-name-display">Klik atau seret file ke sini</div>
             <div class="file-drop-hint">Format: .docx atau .pdf · Maksimal 10 MB</div>
@@ -1280,7 +1280,7 @@
         </div>
         <div class="form-group">
           <label>Pesan Tambahan untuk Editor</label>
-          <textarea id="f-message" placeholder="Opsional: keterangan tambahan..." style="min-height:80px;"></textarea>
+          <textarea name="pesan_editor" id="f-message" placeholder="Opsional: keterangan tambahan..." style="min-height:80px;"></textarea>
         </div>
         <div style="display:flex; align-items:center; gap:0.8rem;">
           <input type="checkbox" id="f-agree" required style="width:auto;" />
@@ -1288,7 +1288,11 @@
             Saya menyatakan bahwa naskah ini orisinal, belum pernah dipublikasikan, dan tidak sedang dalam proses review di jurnal lain.
           </label>
         </div>
-        <button type="submit" class="submit-btn">Kirim Artikel ke Aporia Room</button>
+        <!-- Formspree honeypot anti-spam -->
+        <input type="text" name="_gotcha" style="display:none" />
+        <input type="hidden" name="_subject" value="📬 Submisi Artikel Baru — Aporia Room" />
+        <input type="hidden" name="_next" value="" id="form-next" />
+        <button type="submit" class="submit-btn" id="submit-btn">Kirim Artikel ke Aporia Room</button>
       </form>
 
       <div class="submit-info">
@@ -1416,13 +1420,39 @@ function showNotification(msg) {
   setTimeout(() => { el.style.display = 'none'; }, 4000);
 }
 
-function submitArticle(e) {
+async function submitArticle(e) {
   e.preventDefault();
-  const code = 'APR-2025-' + Math.floor(100 + Math.random() * 900);
-  showNotification('✓ Artikel dikirim! Kode submisi Anda: ' + code);
-  e.target.reset();
-  document.getElementById('file-name-display').textContent = 'Klik atau seret file ke sini';
-  document.getElementById('file-drop-area').style.borderColor = '';
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Mengirim...';
+  btn.disabled = true;
+
+  const form = document.getElementById('article-form');
+  const data = new FormData(form);
+
+  try {
+    const res = await fetch('https://formspree.io/f/xyknprey', {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    });
+
+    if (res.ok) {
+      const code = 'APR-' + new Date().getFullYear() + '-' + Math.floor(100 + Math.random() * 900);
+      showNotification('✓ Artikel berhasil dikirim! Kode submisi: ' + code + ' — Cek email Anda untuk konfirmasi.');
+      form.reset();
+      document.getElementById('file-name-display').textContent = 'Klik atau seret file ke sini';
+      document.getElementById('file-drop-area').style.borderColor = '';
+    } else {
+      const json = await res.json();
+      showNotification('❌ Gagal mengirim: ' + (json.error || 'Coba lagi beberapa saat.'));
+    }
+  } catch (err) {
+    showNotification('❌ Koneksi bermasalah. Pastikan internet aktif dan coba lagi.');
+  }
+
+  btn.textContent = 'Kirim Artikel ke Aporia Room';
+  btn.disabled = false;
 }
 
 const fakeStatuses = {
