@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Editor — Aporia Room</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--s1:#161921;--s2:#1d2230;--br:#252a38;--br2:#2e3447;--tx:#e8e3d8;--mt:#6b7280;--ac:#c8956c;--a2:#5b8fb9;--gn:#4ade80;--yw:#fbbf24;--rd:#f87171;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:13px;}
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.lbox{background:var(--s1);border:1px solid var(--br);padding:3rem;width:380px;}
+.llogo{font-family:'Cormorant Garamond',serif;font-size:2rem;font-style:italic;color:var(--ac);text-align:center;margin-bottom:.3rem;}
+.lsub{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mt);text-align:center;margin-bottom:2.5rem;}
+.lf{margin-bottom:1.2rem;}
+.lf label{display:block;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mt);margin-bottom:.4rem;}
+.lf input{width:100%;background:var(--bg);border:1px solid var(--br2);color:var(--tx);padding:.65rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.8rem;outline:none;transition:border-color .2s;}
+.lf input:focus{border-color:var(--a2);}
+.lbtn{width:100%;background:var(--a2);color:#fff;border:none;padding:.75rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;margin-top:.5rem;}
+.lerr{color:var(--rd);font-size:.65rem;text-align:center;margin-top:.8rem;display:none;}
+.lhint{font-size:.58rem;color:var(--mt);text-align:center;margin-top:1.5rem;border-top:1px solid var(--br);padding-top:1rem;}
+.lhint span{color:var(--ac);}
+#dash{display:none;min-height:100vh;}
+.topbar{background:var(--s1);border-bottom:1px solid var(--br);padding:0 2rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.tb-brand{display:flex;align-items:center;gap:1rem;}
+.tb-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-style:italic;color:var(--ac);}
+.tb-badge{font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mt);border:1px solid var(--br2);padding:.2rem .6rem;}
+.tb-right{display:flex;align-items:center;gap:1rem;}
+.ib{background:none;border:1px solid var(--br2);color:var(--mt);padding:.3rem .8rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;}
+.ib:hover{border-color:var(--a2);color:var(--a2);}
+.ib.danger:hover{border-color:var(--rd);color:var(--rd);}
+.dbody{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 52px);}
+.snav{background:var(--s1);border-right:1px solid var(--br);padding:1.5rem 0;}
+.snav-sec{margin-bottom:2rem;}
+.snav-lbl{font-size:.55rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mt);padding:0 1.5rem;margin-bottom:.5rem;}
+.ni{display:flex;align-items:center;gap:.7rem;padding:.55rem 1.5rem;cursor:pointer;color:var(--mt);font-size:.7rem;transition:all .15s;border-left:2px solid transparent;text-decoration:none;}
+.ni:hover{color:var(--tx);background:rgba(255,255,255,.03);}
+.ni.active{color:var(--ac);background:rgba(200,149,108,.08);border-left-color:var(--ac);}
+.ni .bdg{margin-left:auto;background:var(--ac);color:var(--bg);font-size:.55rem;padding:.1rem .4rem;}
+.main{padding:2rem;overflow-y:auto;}
+.sec{display:none;}.sec.active{display:block;}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;border-bottom:1px solid var(--br);padding-bottom:.8rem;flex-wrap:wrap;gap:.5rem;}
+.ct{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.stat{background:var(--s1);border:1px solid var(--br);padding:1.2rem 1.5rem;}
+.stat-lbl{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mt);margin-bottom:.5rem;}
+.stat-val{font-size:2rem;font-family:'Cormorant Garamond',serif;font-weight:600;line-height:1;margin-bottom:.3rem;}
+.green{color:#4ade80;}.yellow{color:#fbbf24;}.red{color:#f87171;}.blue{color:#5b8fb9;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mt);text-align:left;padding:.6rem 1rem;border-bottom:1px solid var(--br);background:var(--s1);}
+td{padding:.85rem 1rem;border-bottom:1px solid var(--br);font-size:.72rem;vertical-align:middle;}
+tr:hover td{background:rgba(255,255,255,.02);}
+.tc{font-family:'EB Garamond',serif;font-size:.88rem;max-width:260px;line-height:1.4;}
+.tc small{display:block;font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--mt);margin-top:.2rem;}
+.pill{display:inline-block;padding:.2rem .6rem;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;}
+.p-pub{background:rgba(74,222,128,.15);color:#4ade80;}
+.p-draft{background:rgba(91,143,185,.15);color:#5b8fb9;}
+.abts{display:flex;gap:.4rem;flex-wrap:wrap;}
+.ab{background:none;border:1px solid var(--br2);color:var(--mt);padding:.25rem .6rem;font-family:'JetBrains Mono',monospace;font-size:.58rem;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ab:hover{border-color:var(--a2);color:var(--a2);}
+.ab.gn:hover{border-color:#4ade80;color:#4ade80;}
+.ab.rd:hover{border-color:#f87171;color:#f87171;}
+.ab.yw:hover{border-color:#fbbf24;color:#fbbf24;}
+.ab.star-on{border-color:#fbbf24;color:#fbbf24;}
+.ab.active-f{border-color:var(--a2);color:var(--a2);}
+.uform{background:var(--s1);border:1px solid var(--br);padding:2rem;}
+.ug{margin-bottom:1.2rem;}
+.ug label{display:block;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mt);margin-bottom:.4rem;}
+.ug input,.ug textarea,.ug select{width:100%;background:var(--bg);border:1px solid var(--br2);color:var(--tx);padding:.6rem .9rem;font-family:'EB Garamond',serif;font-size:.9rem;outline:none;transition:border-color .2s;}
+.ug input:focus,.ug textarea:focus,.ug select:focus{border-color:var(--a2);}
+.ug select option{background:var(--bg);}
+.ug textarea{resize:vertical;min-height:100px;}
+.ug small{color:#6b7280;font-size:.62rem;margin-top:.3rem;display:block;}
+.ugrow{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.pbtn{background:var(--a2);color:#fff;border:none;padding:.65rem 2rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;margin-right:.5rem;}
+.sbtn2{background:var(--ac);color:var(--bg);border:none;padding:.65rem 2rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;}
+.ep{display:none;background:var(--s2);border:1px solid var(--br2);padding:2rem;margin-top:1rem;}
+.ep.open{display:block;}
+.ep-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-style:italic;font-weight:600;margin-bottom:1.2rem;color:var(--ac);}
+.hlcard{background:var(--s1);border:1px solid var(--br);padding:1.2rem 1.5rem;display:flex;align-items:center;gap:1.5rem;margin-bottom:.8rem;}
+.hlnum{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--br2);min-width:2rem;text-align:center;}
+.hlinfo{flex:1;}
+.hltitle{font-family:'EB Garamond',serif;font-size:1rem;margin-bottom:.2rem;}
+.hlmeta{font-size:.62rem;color:var(--mt);}
+.conf-ov{display:none;position:fixed;inset:0;background:rgba(15,17,23,.9);z-index:9998;align-items:center;justify-content:center;}
+.conf-ov.open{display:flex;}
+.conf-box{background:var(--s1);border:1px solid var(--br2);padding:2rem;max-width:360px;width:90%;text-align:center;}
+.conf-box h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-style:italic;margin-bottom:.8rem;}
+.conf-box p{font-size:.72rem;color:var(--mt);margin-bottom:1.5rem;line-height:1.6;}
+.conf-btns{display:flex;gap:.8rem;justify-content:center;}
+.toast{display:none;position:fixed;bottom:2rem;right:2rem;background:var(--s2);border:1px solid var(--br2);border-left:3px solid var(--a2);color:var(--tx);padding:.9rem 1.5rem;font-size:.65rem;z-index:9999;max-width:360px;animation:fU .3s ease;}
+@keyframes fU{from{transform:translateY(12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.ei{width:100%;background:var(--bg);border:1px solid var(--br2);color:var(--tx);padding:.6rem;font-family:'EB Garamond',serif;font-size:.9rem;outline:none;}
+.eta{width:100%;background:var(--bg);border:1px solid var(--br2);color:var(--tx);padding:.6rem;font-family:'EB Garamond',serif;font-size:.9rem;outline:none;resize:vertical;min-height:100px;}
+@media(max-width:900px){.dbody{grid-template-columns:1fr;}.snav{display:none;}.stats{grid-template-columns:repeat(2,1fr);}.ugrow{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="lbox">
+    <div class="llogo">Aporia Room</div>
+    <div class="lsub">Panel Editor — Akses Terbatas</div>
+    <div class="lf"><label>Username</label><input type="text" id="lu" placeholder="username" /></div>
+    <div class="lf"><label>Password</label><input type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" /></div>
+    <button class="lbtn" onclick="doLogin()">Masuk ke Panel Editor →</button>
+    <div class="lerr" id="lerr">Username atau password salah.</div>
+    <div class="lhint">Login: <span>editor</span> / <span>aporia2025</span></div>
+  </div>
+</div>
+
+<div id="dash">
+  <div class="topbar">
+    <div class="tb-brand">
+      <span class="tb-name">Aporia Room</span>
+      <span class="tb-badge">Panel Editor</span>
+    </div>
+    <div class="tb-right">
+      <span style="font-size:.65rem;color:var(--mt);">Masuk sebagai <strong style="color:var(--ac);">Anharudin Aku Fajri</strong></span>
+      <a href="index.html" class="ib" target="_blank">↗ Lihat Publik</a>
+      <button class="ib danger" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="dbody">
+    <nav class="snav">
+      <div class="snav-sec">
+        <div class="snav-lbl">Utama</div>
+        <a class="ni active" onclick="goSec('overview',this)">▣ &nbsp;Ringkasan</a>
+        <a class="ni" onclick="goSec('articles',this)">📰 &nbsp;Artikel <span class="bdg" id="art-count">—</span></a>
+        <a class="ni" onclick="goSec('highlights',this)">⭐ &nbsp;Sorotan</a>
+      </div>
+      <div class="snav-sec">
+        <div class="snav-lbl">Konten</div>
+        <a class="ni" onclick="goSec('upload',this)">↑ &nbsp;Upload Artikel</a>
+      </div>
+      <div class="snav-sec">
+        <div class="snav-lbl">Tautan</div>
+        <a class="ni" href="index.html" target="_blank">↗ &nbsp;Halaman Publik</a>
+        <a class="ni" href="https://docs.google.com/forms/d/e/1FAIpQLSeZ5tJdc-92dHnwZTsn9l6XmRPvv4YMnOErE9jgk-AuEi3FiA/viewform" target="_blank">📋 &nbsp;Google Form</a>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="sec active" id="sec-overview">
+        <div class="ch"><span class="ct">Ringkasan Dashboard</span><button class="ab" onclick="initDash()">↺ Refresh</button></div>
+        <div class="stats">
+          <div class="stat"><div class="stat-lbl">Total Artikel</div><div class="stat-val blue" id="ov-total">—</div></div>
+          <div class="stat"><div class="stat-lbl">Artikel Terbit</div><div class="stat-val green" id="ov-pub">—</div></div>
+          <div class="stat"><div class="stat-lbl">Draft</div><div class="stat-val yellow" id="ov-draft">—</div></div>
+          <div class="stat"><div class="stat-lbl">Sorotan</div><div class="stat-val" style="color:var(--ac);" id="ov-hl">—</div></div>
+        </div>
+        <div class="ch"><span class="ct">Artikel Terbaru</span></div>
+        <div id="ov-recent" style="color:var(--mt);font-size:.7rem;padding:1rem;">Memuat...</div>
+        <div style="margin-top:1.5rem;padding:1.2rem;background:var(--s1);border:1px solid var(--br);border-left:3px solid var(--a2);">
+          <div style="font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--a2);margin-bottom:.5rem;">📋 Submisi dari Google Form</div>
+          <div style="font-size:.72rem;color:var(--mt);line-height:1.7;">Lihat semua submisi artikel masuk di <a href="https://docs.google.com/forms/d/e/1FAIpQLSeZ5tJdc-92dHnwZTsn9l6XmRPvv4YMnOErE9jgk-AuEi3FiA/viewform" target="_blank" style="color:var(--a2);">Google Form → Responses</a>. Setelah review, upload artikel yang diterima via tab Upload.</div>
+        </div>
+      </div>
+
+      <div class="sec" id="sec-articles">
+        <div class="ch">
+          <span class="ct">Kelola Artikel</span>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            <button class="ab active-f" id="f-all" onclick="filterArt('all',this)">Semua</button>
+            <button class="ab" id="f-pub" onclick="filterArt('published',this)">Terbit</button>
+            <button class="ab" id="f-draft" onclick="filterArt('draft',this)">Draft</button>
+            <button class="ab" onclick="loadArticles()">↺ Refresh</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Judul & Penulis</th><th>Topik</th><th>Tahun</th><th>Status</th><th>Sorotan</th><th>Aksi</th></tr></thead>
+          <tbody id="art-tbody"></tbody>
+        </table>
+        <div class="ep" id="edit-panel"></div>
+      </div>
+
+      <div class="sec" id="sec-highlights">
+        <div class="ch"><span class="ct">Artikel Sorotan</span><button class="ab" onclick="loadHighlights()">↺ Refresh</button></div>
+        <p style="font-size:.62rem;color:var(--mt);margin-bottom:1.2rem;">Artikel sorotan tampil di halaman publik. Toggle bintang ⭐ di tab Artikel untuk mengatur.</p>
+        <div id="hl-list" style="color:var(--mt);font-size:.7rem;padding:1rem;">Memuat...</div>
+      </div>
+
+      <div class="sec" id="sec-upload">
+        <div class="ch"><span class="ct">Upload / Tambah Artikel Baru</span></div>
+        <div class="uform">
+          <div class="ugrow">
+            <div class="ug"><label>Judul Artikel *</label><input type="text" id="u-title" placeholder="Judul lengkap artikel" /></div>
+            <div class="ug"><label>Penulis *</label><input type="text" id="u-author" placeholder="Nama penulis" /></div>
+          </div>
+          <div class="ugrow">
+            <div class="ug"><label>Afiliasi</label><input type="text" id="u-affil" placeholder="Institusi penulis" /></div>
+            <div class="ug"><label>Topik</label>
+              <select id="u-topic">
+                <option>Filsafat Hukum</option><option>Hukum Konstitusi</option>
+                <option>Filsafat Umum</option><option>Ekonomi Politik</option>
+                <option>Kebijakan Publik</option><option>Lintas Disiplin</option>
+              </select>
+            </div>
+          </div>
+          <div class="ugrow">
+            <div class="ug"><label>Volume & Nomor</label><input type="text" id="u-vol" placeholder="Vol. 1, No. 1" /></div>
+            <div class="ug"><label>Tahun</label><input type="text" id="u-year" placeholder="2025" /></div>
+          </div>
+          <div class="ug"><label>Abstrak</label><textarea id="u-abstract" placeholder="Abstrak artikel..."></textarea></div>
+          <div class="ug"><label>Kata Kunci</label><input type="text" id="u-kw" placeholder="kata kunci 1; kata kunci 2" /></div>
+          <div class="ug">
+            <label>Link PDF (Google Drive) *</label>
+            <input type="url" id="u-pdf" placeholder="https://drive.google.com/file/d/..." />
+            <small>Upload PDF ke Google Drive → Share → Anyone with link → paste link di sini</small>
+          </div>
+          <div style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap;">
+            <button class="pbtn" onclick="uploadArt(false)">🌐 Publikasikan Sekarang</button>
+            <button class="sbtn2" onclick="uploadArt(true)">📝 Simpan Draft</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="conf-ov" id="conf-ov">
+  <div class="conf-box">
+    <h3 id="conf-title">Konfirmasi</h3>
+    <p id="conf-msg"></p>
+    <div class="conf-btns">
+      <button class="ab rd" onclick="confYes()" style="border-color:#f87171;color:#f87171;">Ya, Lanjutkan</button>
+      <button class="ab" onclick="closeConf()">Batal</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const BIN_ID='69b5c41faa77b81da9e52aa8';
+const API_KEY='$2a$10$J2NsXqEZu6VK9MS1a/PZHeqKCWpS1Vztvg/yE6DQnJXL08OJAnrua';
+const BIN_URL=`https://api.jsonbin.io/v3/b/${BIN_ID}`;
+let _data={articles:[]};
+let _filterStatus='all';
+
+function doLogin(){
+  if(document.getElementById('lu').value==='editor'&&document.getElementById('lp').value==='aporia2025'){
+    document.getElementById('login').style.display='none';
+    document.getElementById('dash').style.display='block';
+    initDash();
+  }else{document.getElementById('lerr').style.display='block';}
+}
+function doLogout(){document.getElementById('dash').style.display='none';document.getElementById('login').style.display='flex';}
+
+function goSec(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  document.querySelectorAll('.ni').forEach(i=>i.classList.remove('active'));
+  if(el)el.classList.add('active');
+  if(id==='articles')loadArticles();
+  if(id==='highlights')loadHighlights();
+}
+
+function toast(msg,ms=4000){
+  const e=document.getElementById('toast');
+  e.textContent=msg;e.style.display='block';
+  clearTimeout(e._t);e._t=setTimeout(()=>e.style.display='none',ms);
+}
+
+let _cb=null;
+function confirm2(t,m,cb){document.getElementById('conf-title').textContent=t;document.getElementById('conf-msg').textContent=m;document.getElementById('conf-ov').classList.add('open');_cb=cb;}
+function confYes(){closeConf();if(_cb)_cb();}
+function closeConf(){document.getElementById('conf-ov').classList.remove('open');_cb=null;}
+
+async function getData(){
+  const r=await fetch(BIN_URL+'/latest',{headers:{'X-Master-Key':API_KEY}});
+  const j=await r.json();
+  return j.record||{articles:[]};
+}
+async function saveData(data){
+  const r=await fetch(BIN_URL,{method:'PUT',headers:{'X-Master-Key':API_KEY,'Content-Type':'application/json'},body:JSON.stringify(data)});
+  return r.ok;
+}
+
+async function initDash(){
+  try{
+    _data=await getData();
+    const arts=_data.articles||[];
+    const pub=arts.filter(a=>a.status==='published').length;
+    const draft=arts.filter(a=>a.status==='draft').length;
+    const hl=arts.filter(a=>a.highlighted).length;
+    document.getElementById('ov-total').textContent=arts.length;
+    document.getElementById('ov-pub').textContent=pub;
+    document.getElementById('ov-draft').textContent=draft;
+    document.getElementById('ov-hl').textContent=hl;
+    document.getElementById('art-count').textContent=arts.length;
+    const recent=[...arts].reverse().slice(0,5);
+    document.getElementById('ov-recent').innerHTML=recent.length?recent.map(a=>`
+      <div style="background:var(--s1);border:1px solid var(--br);padding:1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div style="flex:1;font-family:'EB Garamond',serif;font-size:.9rem;">${a.title}</div>
+        <div style="font-size:.6rem;color:var(--mt);">${a.author}</div>
+        <span class="pill ${a.status==='published'?'p-pub':'p-draft'}">${a.status==='published'?'Terbit':'Draft'}</span>
+      </div>`).join(''):'<div style="font-style:italic;font-size:.75rem;">Belum ada artikel.</div>';
+  }catch(e){toast('Gagal memuat data. Cek koneksi.');}
+}
+
+async function loadArticles(){
+  document.getElementById('art-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--mt);padding:2rem;">Memuat...</td></tr>';
+  try{_data=await getData();renderArts();}catch(e){toast('Gagal memuat artikel.');}
+}
+
+function renderArts(){
+  const arts=(_data.articles||[]).filter(a=>_filterStatus==='all'||a.status===_filterStatus);
+  const tb=document.getElementById('art-tbody');
+  if(!arts.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--mt);padding:2rem;font-style:italic;">Tidak ada artikel.</td></tr>';return;}
+  tb.innerHTML=[...arts].reverse().map(a=>`
+    <tr>
+      <td class="tc">${a.title}<small>${a.author}${a.affiliation?' · '+a.affiliation:''}</small></td>
+      <td style="font-size:.65rem;">${a.topic||'—'}</td>
+      <td style="color:var(--mt);font-size:.65rem;">${a.year||'—'}</td>
+      <td><span class="pill ${a.status==='published'?'p-pub':'p-draft'}">${a.status==='published'?'Terbit':'Draft'}</span></td>
+      <td><button class="ab ${a.highlighted?'star-on':''} yw" onclick="toggleHL('${a.id}')">${a.highlighted?'★':'☆'}</button></td>
+      <td>
+        <div class="abts">
+          <button class="ab" onclick="openEdit('${a.id}')">✏️</button>
+          ${a.status==='draft'?`<button class="ab gn" onclick="togglePub('${a.id}','published')">🌐 Terbit</button>`:`<button class="ab" onclick="togglePub('${a.id}','draft')">📝 Draft</button>`}
+          <button class="ab rd" onclick="confirmDel('${a.id}')">🗑️</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterArt(status,btn){
+  document.querySelectorAll('#sec-articles .ch .ab').forEach(b=>b.classList.remove('active-f'));
+  btn.classList.add('active-f');
+  _filterStatus=status;
+  renderArts();
+  document.getElementById('edit-panel').classList.remove('open');
+}
+
+function openEdit(id){
+  const a=(_data.articles||[]).find(x=>x.id===id);if(!a)return;
+  const ep=document.getElementById('edit-panel');
+  ep.innerHTML=`
+    <div class="ep-title">✏️ Edit: ${a.title.substring(0,40)}...</div>
+    <div class="ugrow">
+      <div class="ug"><label>Judul</label><input class="ei" id="e-title" value="${(a.title||'').replace(/"/g,'&quot;')}" /></div>
+      <div class="ug"><label>Penulis</label><input class="ei" id="e-author" value="${(a.author||'').replace(/"/g,'&quot;')}" /></div>
+    </div>
+    <div class="ugrow">
+      <div class="ug"><label>Afiliasi</label><input class="ei" id="e-affil" value="${(a.affiliation||'').replace(/"/g,'&quot;')}" /></div>
+      <div class="ug"><label>Topik</label><input class="ei" id="e-topic" value="${(a.topic||'').replace(/"/g,'&quot;')}" /></div>
+    </div>
+    <div class="ug"><label>Abstrak</label><textarea class="eta" id="e-abs">${a.abstract||''}</textarea></div>
+    <div class="ugrow">
+      <div class="ug"><label>Kata Kunci</label><input class="ei" id="e-kw" value="${(a.keywords||'').replace(/"/g,'&quot;')}" /></div>
+      <div class="ug"><label>Link PDF</label><input class="ei" id="e-pdf" value="${(a.pdfLink||'').replace(/"/g,'&quot;')}" /></div>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:.5rem;">
+      <button class="pbtn" onclick="saveEdit('${id}')">✓ Simpan Perubahan</button>
+      <button class="sbtn2" onclick="document.getElementById('edit-panel').classList.remove('open')">Batal</button>
+    </div>`;
+  ep.classList.add('open');
+  ep.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+async function saveEdit(id){
+  try{
+    const arts=_data.articles||[];
+    const idx=arts.findIndex(x=>x.id===id);if(idx===-1)return;
+    arts[idx]={...arts[idx],
+      title:document.getElementById('e-title').value,
+      author:document.getElementById('e-author').value,
+      affiliation:document.getElementById('e-affil').value,
+      topic:document.getElementById('e-topic').value,
+      abstract:document.getElementById('e-abs').value,
+      keywords:document.getElementById('e-kw').value,
+      pdfLink:document.getElementById('e-pdf').value,
+    };
+    _data.articles=arts;
+    await saveData(_data);
+    document.getElementById('edit-panel').classList.remove('open');
+    renderArts();
+    toast('✅ Artikel diperbarui! Langsung update di halaman publik.');
+  }catch(e){toast('Gagal menyimpan.');}
+}
+
+async function togglePub(id,status){
+  try{
+    const a=(_data.articles||[]).find(x=>x.id===id);
+    if(a)a.status=status;
+    await saveData(_data);
+    renderArts();initDash();
+    toast(status==='published'?'🌐 Artikel diterbitkan! Langsung tampil di halaman publik.':'📝 Artikel dijadikan draft.');
+  }catch(e){toast('Gagal update status.');}
+}
+
+async function toggleHL(id){
+  try{
+    const a=(_data.articles||[]).find(x=>x.id===id);
+    if(a)a.highlighted=!a.highlighted;
+    const val=a?a.highlighted:false;
+    await saveData(_data);
+    renderArts();loadHighlights();
+    toast(val?'⭐ Ditambahkan ke sorotan halaman publik!':'Dihapus dari sorotan.');
+  }catch(e){toast('Gagal update sorotan.');}
+}
+
+function confirmDel(id){
+  const a=(_data.articles||[]).find(x=>x.id===id);
+  confirm2('Hapus Artikel',`Hapus "${a?.title?.substring(0,50)||id}..."? Tidak bisa dikembalikan.`,()=>deleteArt(id));
+}
+
+async function deleteArt(id){
+  try{
+    _data.articles=(_data.articles||[]).filter(x=>x.id!==id);
+    await saveData(_data);renderArts();initDash();
+    toast('🗑️ Artikel dihapus.');
+  }catch(e){toast('Gagal menghapus.');}
+}
+
+async function loadHighlights(){
+  try{
+    _data=await getData();
+    const hl=(_data.articles||[]).filter(a=>a.highlighted&&a.status==='published');
+    const el=document.getElementById('hl-list');
+    if(!hl.length){el.innerHTML='<div style="color:var(--mt);font-style:italic;font-size:.75rem;padding:1rem;">Belum ada sorotan. Toggle bintang ⭐ di tab Artikel.</div>';return;}
+    el.innerHTML=hl.map((a,i)=>`
+      <div class="hlcard">
+        <div class="hlnum">${i+1}</div>
+        <div class="hlinfo"><div class="hltitle">${a.title}</div><div class="hlmeta">${a.author} · ${a.topic||''}</div></div>
+        <button class="ab rd" onclick="toggleHL('${a.id}')" style="border-color:#f87171;color:#f87171;">Hapus</button>
+      </div>`).join('');
+  }catch(e){toast('Gagal memuat sorotan.');}
+}
+
+async function uploadArt(isDraft){
+  const title=document.getElementById('u-title').value.trim();
+  const author=document.getElementById('u-author').value.trim();
+  if(!title||!author){toast('⚠️ Judul dan penulis wajib diisi!');return;}
+  try{
+    if(!_data.articles)_data.articles=[];
+    _data.articles.push({
+      id:'art-'+Date.now(),
+      title,author,
+      affiliation:document.getElementById('u-affil').value,
+      topic:document.getElementById('u-topic').value,
+      year:document.getElementById('u-year').value||String(new Date().getFullYear()),
+      abstract:document.getElementById('u-abstract').value,
+      keywords:document.getElementById('u-kw').value,
+      pdfLink:document.getElementById('u-pdf').value,
+      status:isDraft?'draft':'published',
+      highlighted:false,
+      createdAt:new Date().toISOString()
+    });
+    await saveData(_data);
+    ['u-title','u-author','u-affil','u-vol','u-year','u-abstract','u-kw','u-pdf'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    initDash();
+    toast(isDraft?'📝 Draft disimpan.':'🌐 Artikel dipublikasikan! Langsung tampil di halaman publik.');
+  }catch(e){toast('Gagal upload artikel.');}
+}
+</script>
+</body>
+</html>
