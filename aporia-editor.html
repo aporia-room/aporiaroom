@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Editor — Aporia Room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #161921;
+    --surface2: #1d2230;
+    --border: #252a38;
+    --border2: #2e3447;
+    --text: #e8e3d8;
+    --muted: #6b7280;
+    --accent: #c8956c;
+    --accent2: #5b8fb9;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --ink: #1a1614;
+    --rule: #c8956c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #login-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(91,143,185,0.08) 0%, transparent 70%);
+  }
+
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 3rem 3rem 2.5rem;
+    width: 380px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .login-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--rule);
+    margin-bottom: 0.3rem;
+    text-align: center;
+  }
+
+  .login-sub {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .login-field { margin-bottom: 1.2rem; }
+
+  .login-field label {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .login-field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 0.65rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .login-field input:focus { border-color: var(--accent2); }
+
+  .login-btn {
+    width: 100%;
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    padding: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 0.5rem;
+  }
+
+  .login-btn:hover { opacity: 0.85; }
+
+  .login-error {
+    color: var(--red);
+    font-size: 0.65rem;
+    text-align: center;
+    margin-top: 0.8rem;
+    display: none;
+  }
+
+  .login-hint {
+    font-size: 0.58rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+  }
+
+  .login-hint span { color: var(--accent); }
+
+  /* ── DASHBOARD ── */
+  #dashboard { display: none; min-height: 100vh; }
+
+  /* Topbar */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .topbar-brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--rule);
+  }
+
+  .topbar-badge {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+    padding: 0.2rem 0.6rem;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .topbar-user {
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+
+  .topbar-user strong { color: var(--accent); }
+
+  .logout-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    padding: 0.3rem 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* Layout */
+  .dashboard-body {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 52px);
+  }
+
+  /* Sidebar Nav */
+  .sidenav {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 0;
+  }
+
+  .sidenav-section {
+    margin-bottom: 2rem;
+  }
+
+  .sidenav-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .sidenav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 1.5rem;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    text-decoration: none;
+  }
+
+  .sidenav-item:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+
+  .sidenav-item.active {
+    color: var(--accent);
+    background: rgba(200,149,108,0.08);
+    border-left-color: var(--accent);
+  }
+
+  .sidenav-item .badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: var(--bg);
+    font-size: 0.55rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 2px;
+  }
+
+  /* Main Content */
+  .main-content { padding: 2rem; overflow-y: auto; }
+
+  /* Stats Row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem;
+  }
+
+  .stat-card-label {
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-card-value {
+    font-size: 2rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-card-sub { font-size: 0.6rem; color: var(--muted); }
+
+  .stat-card-value.green { color: var(--green); }
+  .stat-card-value.yellow { color: var(--yellow); }
+  .stat-card-value.red { color: var(--red); }
+  .stat-card-value.blue { color: var(--accent2); }
+
+  /* Section Header */
+  .content-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.8rem;
+  }
+
+  .content-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .content-actions { display: flex; gap: 0.5rem; }
+
+  .btn-sm {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    padding: 0.3rem 0.8rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-sm:hover { border-color: var(--accent2); color: var(--accent2); }
+  .btn-sm.active { border-color: var(--accent2); color: var(--accent2); background: rgba(91,143,185,0.1); }
+
+  /* Article Table */
+  .article-table { width: 100%; border-collapse: collapse; }
+
+  .article-table th {
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .article-table td {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.72rem;
+    vertical-align: middle;
+  }
+
+  .article-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .article-table .title-cell {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.88rem;
+    color: var(--text);
+    max-width: 320px;
+    line-height: 1.4;
+  }
+
+  .article-table .title-cell small {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+
+  .status-pill {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+
+  .pill-new { background: rgba(91,143,185,0.2); color: var(--accent2); }
+  .pill-review { background: rgba(251,191,36,0.15); color: var(--yellow); }
+  .pill-revision { background: rgba(251,146,60,0.15); color: #fb923c; }
+  .pill-accepted { background: rgba(74,222,128,0.15); color: var(--green); }
+  .pill-rejected { background: rgba(248,113,113,0.15); color: var(--red); }
+
+  .action-btns { display: flex; gap: 0.4rem; }
+
+  .action-btn {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    padding: 0.25rem 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .action-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .action-btn.green-btn:hover { border-color: var(--green); color: var(--green); }
+  .action-btn.red-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* Detail Panel */
+  .detail-panel {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    padding: 2rem;
+    margin-top: 1rem;
+  }
+
+  .detail-panel.active { display: block; }
+
+  .detail-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-style: italic;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+
+  .detail-meta {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .detail-field label {
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 0.3rem;
+  }
+
+  .detail-field .val {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .detail-abstract {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 1.2rem;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: #c8c0b0;
+    text-align: justify;
+    margin-bottom: 1.5rem;
+  }
+
+  .review-textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 0.8rem 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    outline: none;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s;
+    margin-bottom: 1rem;
+  }
+
+  .review-textarea:focus { border-color: var(--accent2); }
+
+  .decision-btns { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+
+  .decision-btn {
+    padding: 0.5rem 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .dec-accept { background: var(--green); color: var(--bg); }
+  .dec-revision { background: var(--yellow); color: var(--bg); }
+  .dec-reject { background: var(--red); color: #fff; }
+  .dec-review { background: var(--accent2); color: #fff; }
+  .decision-btn:hover { opacity: 0.8; }
+
+  /* Upload Article (Editor) */
+  .upload-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2rem;
+  }
+
+  .form-group { margin-bottom: 1.2rem; }
+
+  .form-group label {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 0.6rem 0.9rem;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus { border-color: var(--accent2); }
+
+  .form-group select option { background: var(--bg); }
+  .form-group textarea { resize: vertical; min-height: 100px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  .btn-primary-dark {
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    padding: 0.65rem 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .btn-primary-dark:hover { opacity: 0.85; }
+
+  .btn-accent-dark {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 0.65rem 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  /* Highlight Articles Tab */
+  .highlight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+
+  .highlight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .highlight-order {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--border2);
+    min-width: 2rem;
+    text-align: center;
+  }
+
+  .highlight-info { flex: 1; }
+
+  .highlight-title {
+    font-family: 'EB Garamond', serif;
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+  }
+
+  .highlight-meta { font-size: 0.62rem; color: var(--muted); }
+
+  .highlight-star { color: var(--yellow); font-size: 0.9rem; }
+
+  /* Notification */
+  .toast {
+    display: none;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 0.9rem 1.5rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    z-index: 9999;
+    animation: fadeUp 0.3s ease;
+    border-left: 3px solid var(--accent2);
+  }
+
+  @keyframes fadeUp {
+    from { transform: translateY(12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Tabs */
+  .tab-buttons {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .tab-btn {
+    padding: 0.7rem 1.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  @media (max-width: 900px) {
+    .dashboard-body { grid-template-columns: 1fr; }
+    .sidenav { display: none; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Aporia Room</div>
+    <div class="login-sub">Panel Editor — Akses Terbatas</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="editor username" />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="login-btn" onclick="doLogin()">Masuk ke Panel Editor →</button>
+    <div class="login-error" id="login-error">Username atau password salah.</div>
+    <div class="login-hint">
+      Demo: username <span>editor</span> · password <span>aporia2025</span>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-brand-name">Aporia Room</span>
+      <span class="topbar-badge">Panel Editor</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user">Masuk sebagai <strong>Anharudin Aku Fajri</strong></span>
+      <a href="aporia-public.html" class="logout-btn">↗ Lihat Halaman Publik</a>
+      <button class="logout-btn" onclick="doLogout()">Keluar</button>
+    </div>
+  </div>
+
+  <div class="dashboard-body">
+    <!-- Sidenav -->
+    <nav class="sidenav">
+      <div class="sidenav-section">
+        <div class="sidenav-label">Utama</div>
+        <a class="sidenav-item active" onclick="showSection('overview')">▣ &nbsp;Ringkasan</a>
+        <a class="sidenav-item" onclick="showSection('submissions')">📥 &nbsp;Submisi <span class="badge">7</span></a>
+        <a class="sidenav-item" onclick="showSection('published')">📰 &nbsp;Terbit</a>
+        <a class="sidenav-item" onclick="showSection('highlights')">⭐ &nbsp;Highlight Artikel</a>
+      </div>
+      <div class="sidenav-section">
+        <div class="sidenav-label">Manajemen</div>
+        <a class="sidenav-item" onclick="showSection('upload')">↑ &nbsp;Upload Artikel</a>
+        <a class="sidenav-item" onclick="showSection('template')">📄 &nbsp;Template & Berkas</a>
+        <a class="sidenav-item" onclick="showSection('settings')">⚙ &nbsp;Pengaturan</a>
+      </div>
+      <div class="sidenav-section">
+        <div class="sidenav-label">Tautan</div>
+        <a class="sidenav-item" href="aporia-public.html" target="_blank">↗ &nbsp;Halaman Publik</a>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main class="main-content">
+
+      <!-- OVERVIEW -->
+      <section id="section-overview">
+        <div class="content-header">
+          <span class="content-title">Ringkasan Dashboard</span>
+          <span style="font-size:0.6rem; color:var(--muted);">Aporia Room · Editor: Anharudin Aku Fajri</span>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-card-label">Total Submisi</div>
+            <div class="stat-card-value blue">12</div>
+            <div class="stat-card-sub">Sepanjang masa</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Menunggu Review</div>
+            <div class="stat-card-value yellow">7</div>
+            <div class="stat-card-sub">Perlu tindakan</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Diterima</div>
+            <div class="stat-card-value green">3</div>
+            <div class="stat-card-sub">Terbit / siap terbit</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Ditolak</div>
+            <div class="stat-card-value red">2</div>
+            <div class="stat-card-sub">Tidak memenuhi syarat</div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div>
+            <div class="content-header">
+              <span class="content-title">Submisi Terbaru</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+              <div style="background:var(--surface); border:1px solid var(--border); padding:1rem;">
+                <div style="font-family:'EB Garamond',serif; font-size:0.9rem; margin-bottom:0.2rem; color:var(--text);">Teori Kontrak dan Batas Kebebasan Berkontrak...</div>
+                <div style="font-size:0.6rem; color:var(--muted);">Diterima 2 jam lalu · Ahmad Ridwan · <span class="status-pill pill-new">Baru</span></div>
+              </div>
+              <div style="background:var(--surface); border:1px solid var(--border); padding:1rem;">
+                <div style="font-family:'EB Garamond',serif; font-size:0.9rem; margin-bottom:0.2rem; color:var(--text);">Prinsip Non-Diskriminasi dalam Hukum...</div>
+                <div style="font-size:0.6rem; color:var(--muted);">Kemarin · Siti Marlina · <span class="status-pill pill-review">Review</span></div>
+              </div>
+              <div style="background:var(--surface); border:1px solid var(--border); padding:1rem;">
+                <div style="font-family:'EB Garamond',serif; font-size:0.9rem; margin-bottom:0.2rem; color:var(--text);">Dilema Fiskal Negara Berkembang...</div>
+                <div style="font-size:0.6rem; color:var(--muted);">3 hari lalu · Budi Santoso · <span class="status-pill pill-revision">Revisi</span></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="content-header">
+              <span class="content-title">Distribusi Topik</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+              <div style="display:flex; align-items:center; gap:1rem;">
+                <span style="font-size:0.65rem; color:var(--muted); min-width:120px;">Filsafat Hukum</span>
+                <div style="flex:1; background:var(--border); height:8px; border-radius:1px; overflow:hidden;">
+                  <div style="width:40%; height:100%; background:var(--accent);"></div>
+                </div>
+                <span style="font-size:0.6rem; color:var(--muted);">40%</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:1rem;">
+                <span style="font-size:0.65rem; color:var(--muted); min-width:120px;">Konstitusi</span>
+                <div style="flex:1; background:var(--border); height:8px; border-radius:1px; overflow:hidden;">
+                  <div style="width:25%; height:100%; background:var(--accent2);"></div>
+                </div>
+                <span style="font-size:0.6rem; color:var(--muted);">25%</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:1rem;">
+                <span style="font-size:0.65rem; color:var(--muted); min-width:120px;">Ekonomi Politik</span>
+                <div style="flex:1; background:var(--border); height:8px; border-radius:1px; overflow:hidden;">
+                  <div style="width:20%; height:100%; background:var(--yellow);"></div>
+                </div>
+                <span style="font-size:0.6rem; color:var(--muted);">20%</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:1rem;">
+                <span style="font-size:0.65rem; color:var(--muted); min-width:120px;">Kebijakan Publik</span>
+                <div style="flex:1; background:var(--border); height:8px; border-radius:1px; overflow:hidden;">
+                  <div style="width:15%; height:100%; background:var(--green);"></div>
+                </div>
+                <span style="font-size:0.6rem; color:var(--muted);">15%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUBMISSIONS -->
+      <section id="section-submissions" style="display:none;">
+        <div class="content-header">
+          <span class="content-title">Manajemen Submisi</span>
+          <div class="content-actions">
+            <button class="btn-sm active" onclick="filterStatus('all', this)">Semua</button>
+            <button class="btn-sm" onclick="filterStatus('baru', this)">Baru</button>
+            <button class="btn-sm" onclick="filterStatus('review', this)">Review</button>
+            <button class="btn-sm" onclick="filterStatus('revisi', this)">Revisi</button>
+          </div>
+        </div>
+
+        <table class="article-table" id="submission-table">
+          <thead>
+            <tr>
+              <th>Kode</th>
+              <th>Judul & Penulis</th>
+              <th>Topik</th>
+              <th>Tgl Masuk</th>
+              <th>Status</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="submission-tbody"></tbody>
+        </table>
+
+        <div class="detail-panel" id="detail-panel">
+          <div id="detail-content"></div>
+        </div>
+      </section>
+
+      <!-- PUBLISHED -->
+      <section id="section-published" style="display:none;">
+        <div class="content-header">
+          <span class="content-title">Artikel Terbit</span>
+        </div>
+        <table class="article-table">
+          <thead>
+            <tr>
+              <th>Vol/No</th>
+              <th>Judul</th>
+              <th>Penulis</th>
+              <th>Topik</th>
+              <th>Tanggal</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--muted);">1/1</td>
+              <td class="title-cell">Dilema Normatif dalam Putusan MK</td>
+              <td>Anharudin Aku Fajri</td>
+              <td><span class="status-pill pill-accepted">Filsafat Hukum</span></td>
+              <td style="color:var(--muted);">Jan 2025</td>
+              <td><div class="action-btns"><button class="action-btn">Edit</button><button class="action-btn red-btn">Tarik</button></div></td>
+            </tr>
+            <tr>
+              <td style="color:var(--muted);">1/1</td>
+              <td class="title-cell">Rasionalitas Kebijakan Fiskal Indonesia</td>
+              <td>Kontributor Tamu</td>
+              <td><span class="status-pill pill-accepted">Ekonomi Politik</span></td>
+              <td style="color:var(--muted);">Jan 2025</td>
+              <td><div class="action-btns"><button class="action-btn">Edit</button><button class="action-btn red-btn">Tarik</button></div></td>
+            </tr>
+            <tr>
+              <td style="color:var(--muted);">1/1</td>
+              <td class="title-cell">Konstitusionalisme Deliberatif</td>
+              <td>Kontributor Tamu</td>
+              <td><span class="status-pill pill-accepted">Konstitusi</span></td>
+              <td style="color:var(--muted);">Jan 2025</td>
+              <td><div class="action-btns"><button class="action-btn">Edit</button><button class="action-btn red-btn">Tarik</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- HIGHLIGHTS -->
+      <section id="section-highlights" style="display:none;">
+        <div class="content-header">
+          <span class="content-title">Highlight Artikel (Tampil di Halaman Publik)</span>
+          <button class="btn-sm" onclick="showToast('Urutan highlight disimpan.')">Simpan Urutan</button>
+        </div>
+        <p style="font-size:0.62rem; color:var(--muted); margin-bottom:1.2rem;">Artikel berikut ditampilkan sebagai highlight di bagian bawah halaman publik. Anda dapat mengatur urutan dan memilih artikel yang ditampilkan.</p>
+        <div class="highlight-list">
+          <div class="highlight-card">
+            <div class="highlight-order">1</div>
+            <div class="highlight-info">
+              <div class="highlight-title">Dilema Normatif dalam Putusan MK: Antara Keadilan Substansif dan Kepastian Hukum Formal</div>
+              <div class="highlight-meta">Anharudin Aku Fajri · Vol.1 No.1 · Filsafat Hukum</div>
+            </div>
+            <div>
+              <span class="highlight-star">★ Unggulan</span>
+            </div>
+            <div class="action-btns">
+              <button class="action-btn" onclick="showToast('Artikel dipindahkan.')">↑ Naik</button>
+              <button class="action-btn" onclick="showToast('Artikel dipindahkan.')">↓ Turun</button>
+              <button class="action-btn red-btn" onclick="showToast('Artikel dihapus dari highlight.')">Hapus</button>
+            </div>
+          </div>
+          <div class="highlight-card">
+            <div class="highlight-order">2</div>
+            <div class="highlight-info">
+              <div class="highlight-title">Rasionalitas Kebijakan Fiskal Indonesia: Kritik atas Homo Economicus</div>
+              <div class="highlight-meta">Kontributor Tamu · Vol.1 No.1 · Ekonomi Politik</div>
+            </div>
+            <div style="width:80px;"></div>
+            <div class="action-btns">
+              <button class="action-btn" onclick="showToast('Artikel dipindahkan.')">↑ Naik</button>
+              <button class="action-btn" onclick="showToast('Artikel dipindahkan.')">↓ Turun</button>
+              <button class="action-btn red-btn" onclick="showToast('Artikel dihapus dari highlight.')">Hapus</button>
+            </div>
+          </div>
+          <div class="highlight-card">
+            <div class="highlight-order">3</div>
+            <div class="highlight-info">
+              <div class="highlight-title">Konstitusionalisme Deliberatif: Menuju Model Partisipasi Warga yang Lebih Substantif</div>
+              <div class="highlight-meta">Kontributor Tamu · Vol.1 No.1 · Konstitusi</div>
+            </div>
+            <div style="width:80px;"></div>
+            <div class="action-btns">
+              <button class="action-btn" onclick="showToast('Artikel dipindahkan.')">↑ Naik</button>
+              <button class="action-btn" onclick="showToast('Artikel dipindahkan.')">↓ Turun</button>
+              <button class="action-btn red-btn" onclick="showToast('Artikel dihapus dari highlight.')">Hapus</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem; padding:1rem; border:1px dashed var(--border2); text-align:center;">
+          <button class="btn-sm" onclick="showToast('Pilih artikel dari daftar Terbit untuk ditambahkan.')">+ Tambah Artikel ke Highlight</button>
+        </div>
+      </section>
+
+      <!-- UPLOAD ARTICLE -->
+      <section id="section-upload" style="display:none;">
+        <div class="content-header">
+          <span class="content-title">Upload / Tambah Artikel Langsung</span>
+        </div>
+        <div class="upload-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Judul Artikel *</label>
+              <input type="text" placeholder="Judul lengkap artikel" />
+            </div>
+            <div class="form-group">
+              <label>Penulis *</label>
+              <input type="text" placeholder="Nama penulis / kontributor" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Afiliasi</label>
+              <input type="text" placeholder="Institusi penulis" />
+            </div>
+            <div class="form-group">
+              <label>Topik / Bidang</label>
+              <select>
+                <option>Filsafat Hukum</option>
+                <option>Hukum Konstitusi</option>
+                <option>Ekonomi Politik</option>
+                <option>Kebijakan Publik</option>
+                <option>Filsafat Umum</option>
+                <option>Lintas Disiplin</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Volume</label>
+              <input type="text" placeholder="Vol. 1" />
+            </div>
+            <div class="form-group">
+              <label>Nomor & Tahun</label>
+              <input type="text" placeholder="No. 1, 2025" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Abstrak</label>
+            <textarea placeholder="Abstrak artikel (bahasa Indonesia)..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Kata Kunci</label>
+            <input type="text" placeholder="kata kunci 1; kata kunci 2; kata kunci 3" />
+          </div>
+          <div class="form-group">
+            <label>Upload File Artikel (.docx / .pdf)</label>
+            <input type="file" accept=".docx,.pdf" />
+          </div>
+          <div style="display:flex; gap:1rem;">
+            <button class="btn-primary-dark" onclick="showToast('Artikel berhasil diupload dan dipublikasikan.')">Publikasikan Artikel</button>
+            <button class="btn-accent-dark" onclick="showToast('Artikel disimpan sebagai draft.')">Simpan Draft</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TEMPLATE & FILES -->
+      <section id="section-template" style="display:none;">
+        <div class="content-header">
+          <span class="content-title">Template & Berkas Jurnal</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.8rem;">
+          <div style="background:var(--surface); border:1px solid var(--border); padding:1.2rem 1.5rem; display:flex; align-items:center; gap:1.5rem;">
+            <span style="font-size:1.5rem;">📄</span>
+            <div style="flex:1;">
+              <div style="color:var(--text); font-size:0.8rem; margin-bottom:0.2rem;">Template Artikel Aporia Room v1.0.docx</div>
+              <div style="font-size:0.6rem; color:var(--muted);">Times New Roman · Chicago Footnote · Last updated: Jan 2025</div>
+            </div>
+            <div class="action-btns">
+              <button class="action-btn" onclick="showToast('Download template dimulai.')">↓ Download</button>
+              <button class="action-btn" onclick="showToast('Upload template baru.')">Upload Baru</button>
+            </div>
+          </div>
+          <div style="background:var(--surface); border:1px solid var(--border); padding:1.2rem 1.5rem; display:flex; align-items:center; gap:1.5rem;">
+            <span style="font-size:1.5rem;">📋</span>
+            <div style="flex:1;">
+              <div style="color:var(--text); font-size:0.8rem; margin-bottom:0.2rem;">Pedoman Penulisan Aporia Room 2025.pdf</div>
+              <div style="font-size:0.6rem; color:var(--muted);">Panduan lengkap untuk penulis · 8 halaman</div>
+            </div>
+            <div class="action-btns">
+              <button class="action-btn" onclick="showToast('Download pedoman dimulai.')">↓ Download</button>
+              <button class="action-btn" onclick="showToast('Upload pedoman baru.')">Upload Baru</button>
+            </div>
+          </div>
+          <div style="background:var(--surface); border:1px solid var(--border); padding:1.2rem 1.5rem; display:flex; align-items:center; gap:1.5rem;">
+            <span style="font-size:1.5rem;">✉️</span>
+            <div style="flex:1;">
+              <div style="color:var(--text); font-size:0.8rem; margin-bottom:0.2rem;">Template Email Konfirmasi Submisi</div>
+              <div style="font-size:0.6rem; color:var(--muted);">Dikirim otomatis saat submisi berhasil</div>
+            </div>
+            <div class="action-btns">
+              <button class="action-btn" onclick="showToast('Buka editor template email.')">Edit</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="section-settings" style="display:none;">
+        <div class="content-header">
+          <span class="content-title">Pengaturan Jurnal</span>
+        </div>
+        <div class="upload-form">
+          <div class="form-group">
+            <label>Nama Jurnal</label>
+            <input type="text" value="Aporia Room" />
+          </div>
+          <div class="form-group">
+            <label>Pemilik / Editor in Chief</label>
+            <input type="text" value="Anharudin Aku Fajri" />
+          </div>
+          <div class="form-group">
+            <label>Email Redaksi</label>
+            <input type="email" value="editor@aporiaroom.id" />
+          </div>
+          <div class="form-group">
+            <label>ISSN (jika sudah terdaftar)</label>
+            <input type="text" placeholder="xxxx-xxxx" />
+          </div>
+          <div class="form-group">
+            <label>Deskripsi Singkat</label>
+            <textarea style="min-height:80px;">Jurnal ilmiah multidisiplin dengan fokus pada kajian filsafat, hukum, konstitusi, ekonomi, dan kebijakan publik.</textarea>
+          </div>
+          <button class="btn-primary-dark" onclick="showToast('Pengaturan berhasil disimpan.')">Simpan Pengaturan</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// --- AUTH ---
+const CREDS = { user: 'editor', pass: 'aporia2025' };
+
+function doLogin() {
+  const u = document.getElementById('login-user').value;
+  const p = document.getElementById('login-pass').value;
+  if (u === CREDS.user && p === CREDS.pass) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    renderSubmissions();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function doLogout() {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+// --- NAV ---
+function showSection(id) {
+  document.querySelectorAll('main > section').forEach(s => s.style.display = 'none');
+  document.getElementById('section-' + id).style.display = 'block';
+  document.querySelectorAll('.sidenav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+// --- DATA ---
+const submissions = [
+  { code: 'APR-2025-007', title: 'Teori Kontrak dan Batas Kebebasan Berkontrak dalam Perspektif Hukum Islam', author: 'Ahmad Ridwan', topic: 'Filsafat Hukum', date: '14 Mar 2025', status: 'baru', abstract: 'Artikel ini mengkaji batasan kebebasan berkontrak dalam hukum Islam kontemporer dengan perspektif filsafat hukum komparatif.' },
+  { code: 'APR-2025-006', title: 'Prinsip Non-Diskriminasi dalam Hukum Internasional: Perkembangan dan Tantangan', author: 'Siti Marlina', topic: 'Hukum Konstitusi', date: '12 Mar 2025', status: 'review', abstract: 'Kajian mendalam tentang evolusi prinsip non-diskriminasi dalam hukum internasional hak asasi manusia.' },
+  { code: 'APR-2025-005', title: 'Dilema Fiskal Negara Berkembang di Era Resesi Global', author: 'Budi Santoso', topic: 'Ekonomi Politik', date: '10 Mar 2025', status: 'revisi', abstract: 'Analisis kebijakan fiskal negara berkembang dalam konteks tekanan ekonomi global.' },
+  { code: 'APR-2025-004', title: 'Ontologi Kekuasaan: Membaca Foucault dalam Konteks Hukum Indonesia', author: 'Rani Kusuma', topic: 'Filsafat Hukum', date: '8 Mar 2025', status: 'review', abstract: 'Penerapan teori kekuasaan Foucault untuk menganalisis struktur hukum Indonesia.' },
+  { code: 'APR-2025-003', title: 'Otonomi Daerah dan Konflik Norma dalam Perda', author: 'Dimas Pramudito', topic: 'Kebijakan Publik', date: '5 Mar 2025', status: 'revisi', abstract: 'Studi tentang konflik norma antara Perda dan regulasi nasional dalam kerangka otonomi daerah.' },
+  { code: 'APR-2025-002', title: 'Teori Keadilan Rawls dan Relevansinya bagi Kebijakan Sosial', author: 'Anisa Putri', topic: 'Filsafat Hukum', date: '2 Mar 2025', status: 'diterima', abstract: 'Aplikasi teori keadilan Rawls pada desain kebijakan sosial di Indonesia.' },
+  { code: 'APR-2025-001', title: 'Positivisme Hukum dan Kritik Marxis terhadap Tatanan Legal', author: 'Hendra Wijaya', topic: 'Filsafat Hukum', date: '28 Feb 2025', status: 'ditolak', abstract: 'Perdebatan antara positivisme hukum dan kritik Marxis dalam konteks hukum modern.' },
+];
+
+const pillMap = {
+  baru: 'pill-new', review: 'pill-review', revisi: 'pill-revision',
+  diterima: 'pill-accepted', ditolak: 'pill-rejected'
+};
+
+const labelMap = {
+  baru: 'Baru', review: 'Review', revisi: 'Revisi Kecil',
+  diterima: 'Diterima', ditolak: 'Ditolak'
+};
+
+function renderSubmissions(filter = 'all') {
+  const tbody = document.getElementById('submission-tbody');
+  const data = filter === 'all' ? submissions : submissions.filter(s => s.status === filter);
+  tbody.innerHTML = data.map(s => `
+    <tr>
+      <td style="color:var(--muted); white-space:nowrap;">${s.code}</td>
+      <td class="title-cell">${s.title}<small>${s.author}</small></td>
+      <td>${s.topic}</td>
+      <td style="color:var(--muted); white-space:nowrap;">${s.date}</td>
+      <td><span class="status-pill ${pillMap[s.status]}">${labelMap[s.status]}</span></td>
+      <td>
+        <div class="action-btns">
+          <button class="action-btn" onclick="openDetail('${s.code}')">Detail</button>
+          <button class="action-btn green-btn" onclick="changeStatus('${s.code}', 'diterima')">✓ Terima</button>
+          <button class="action-btn red-btn" onclick="changeStatus('${s.code}', 'ditolak')">✗ Tolak</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterStatus(status, btn) {
+  document.querySelectorAll('.content-actions .btn-sm').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSubmissions(status);
+  document.getElementById('detail-panel').classList.remove('active');
+}
+
+function openDetail(code) {
+  const s = submissions.find(x => x.code === code);
+  if (!s) return;
+  const panel = document.getElementById('detail-panel');
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-title">${s.title}</div>
+    <div class="detail-meta">${s.author} · ${s.topic} · ${s.date} · Kode: ${s.code} · Status: <span class="status-pill ${pillMap[s.status]}">${labelMap[s.status]}</span></div>
+    <div class="detail-grid">
+      <div class="detail-field"><label>Penulis</label><div class="val">${s.author}</div></div>
+      <div class="detail-field"><label>Topik</label><div class="val">${s.topic}</div></div>
+      <div class="detail-field"><label>Kode Submisi</label><div class="val">${s.code}</div></div>
+      <div class="detail-field"><label>Tanggal Masuk</label><div class="val">${s.date}</div></div>
+    </div>
+    <div style="font-size:0.58rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem;">Abstrak</div>
+    <div class="detail-abstract">${s.abstract}</div>
+    <div style="font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem;">Catatan Review / Keputusan Editorial</div>
+    <textarea class="review-textarea" placeholder="Tulis catatan review atau komentar untuk penulis..."></textarea>
+    <div class="decision-btns">
+      <button class="decision-btn dec-accept" onclick="changeStatus('${s.code}', 'diterima')">✓ Terima</button>
+      <button class="decision-btn dec-revision" onclick="changeStatus('${s.code}', 'revisi')">↺ Minta Revisi</button>
+      <button class="decision-btn dec-review" onclick="changeStatus('${s.code}', 'review')">→ Kirim ke Reviewer</button>
+      <button class="decision-btn dec-reject" onclick="changeStatus('${s.code}', 'ditolak')">✗ Tolak</button>
+    </div>
+  `;
+  panel.classList.add('active');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function changeStatus(code, newStatus) {
+  const s = submissions.find(x => x.code === code);
+  if (s) {
+    s.status = newStatus;
+    renderSubmissions();
+    document.getElementById('detail-panel').classList.remove('active');
+    showToast(`Status artikel ${code} diubah menjadi: ${labelMap[newStatus]}`);
+  }
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+</script>
+</body>
+</html>
