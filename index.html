@@ -514,7 +514,7 @@ async function loadArticles(){
             <button class="share-btn" onclick="toggleShare('share-${a.id}', event)">🔗 Bagikan</button>
             <div class="share-menu" id="share-${a.id}">
               <a href="https://wa.me/?text=${encodeURIComponent(a.title + ' — Aporia Room\n' + window.location.href + '#artikel')}" target="_blank">💬 WhatsApp</a>
-              <a href="https://www.instagram.com/ruang.aporia" target="_blank">📸 Instagram</a>
+              <a onclick="igStoryShare(event)" href="#">📸 Instagram Story</a>
               <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(a.title + ' — Aporia Room')}&url=${encodeURIComponent(window.location.href + '#artikel')}" target="_blank">🐦 Twitter / X</a>
               <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href + '#artikel')}" target="_blank">📘 Facebook</a>
               <a href="https://t.me/share/url?url=${encodeURIComponent(window.location.href + '#artikel')}&text=${encodeURIComponent(a.title)}" target="_blank">✈️ Telegram</a>
@@ -546,6 +546,27 @@ async function loadHighlights(){
 
 loadArticles();
 loadHighlights();
+
+function igStoryShare(e){
+  e.preventDefault();
+  const url = window.location.href.split('#')[0] + '#artikel';
+  // Copy link to clipboard
+  navigator.clipboard.writeText(url).then(()=>{
+    notif('✓ Link disalin! Buka Instagram → Story → Tempel link artikel.');
+    // Open Instagram app after short delay
+    setTimeout(()=>{
+      window.open('instagram://story-camera', '_blank');
+      // fallback ke web
+      setTimeout(()=>{
+        window.open('https://www.instagram.com/', '_blank');
+      }, 1500);
+    }, 800);
+  }).catch(()=>{
+    notif('Buka Instagram → Story → Tempel link artikel ini: ' + url, 6000);
+    window.open('https://www.instagram.com/', '_blank');
+  });
+  document.querySelectorAll('.share-menu').forEach(m => m.classList.remove('open'));
+}
 function toggleShare(id, e){
   e.stopPropagation();
   const menu = document.getElementById(id);
