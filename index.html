@@ -193,7 +193,7 @@ footer{background:var(--ink);color:#6b5e52;padding:2.5rem 0;border-top:2px solid
   <h1><em>Aporia</em> Room</h1>
   <div class="masthead-subtitle">Jurnal Kajian Filsafat, Hukum, Konstitusi, Ekonomi, dan Kebijakan Publik</div>
   <div class="masthead-rule"></div>
-  <div class="masthead-meta">Vol. 1 · 2026</div>
+  <div class="masthead-meta">Vol. 1 · 2026 &nbsp;·&nbsp; ISSN: 2XXX-XXXX (Online)</div>
   <div class="focus-tags">
     <span class="focus-tag">Filsafat</span><span class="focus-tag">Hukum</span>
     <span class="focus-tag">Konstitusi</span><span class="focus-tag">Ekonomi</span>
@@ -486,24 +486,43 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM();});
 
 async function getData(){
   try{
-    const r=await fetch(BIN_URL+'/latest',{headers:{'X-Access-Key':'$2a$10$J2NsXqEZu6VK9MS1a/PZHeqKCWpS1Vztvg/yE6DQnJXL08OJAnrua'}});
-    if(!r.ok) throw new Error('fetch failed');
+    const r=await fetch(BIN_URL+'/latest',{
+      headers:{
+        'X-Master-Key':'$2a$10$J2NsXqEZu6VK9MS1a/PZHeqKCWpS1Vztvg/yE6DQnJXL08OJAnrua'
+      }
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
     const j=await r.json();
-    return j.record||{articles:[]};
+    // JSONBin returns {record: {articles:[...]}, metadata: {...}}
+    return j.record || j || {articles:[]};
   }catch(e){
+    console.error('JSONBin error:',e);
+    notif('⚠️ Gagal mengambil data jurnal. Periksa koneksi internet Anda.', 6000);
+    const el=document.getElementById('articles-list');
+    if(el) el.innerHTML='<div class="empty">⚠️ Gagal memuat artikel.<br><span style="font-size:.85rem;">Periksa koneksi internet atau coba refresh halaman.</span></div>';
     return _fallbackData;
   }
 }
 
 function openArticle(id){
   const d=$cache[id];if(!d)return;
+  const pubDate=d.createdAt?new Date(d.createdAt).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'—';
+  const doi=d.doi||`10.00000/aporia.${d.year||2026}.001`;
   document.getElementById('modal-body').innerHTML=`
+    <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:.5rem;">${d.topic||'—'} · ${d.volume||'Vol. 1'}, ${d.number||'No. 1'}</div>
     <h2>${d.title}</h2>
-    <div class="modal-meta">${d.author}${d.affiliation?' · '+d.affiliation:''} · ${d.topic||''} · ${d.year||''}</div>
+    <div class="modal-meta">${d.author}${d.affiliation?' · '+d.affiliation:''}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.5rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;">
+      <div style="border:1px solid var(--light-rule);padding:.5rem .8rem;"><span style="color:var(--muted);">Diterbitkan</span><br><strong>${pubDate}</strong></div>
+      <div style="border:1px solid var(--light-rule);padding:.5rem .8rem;"><span style="color:var(--muted);">ISSN</span><br><strong>2XXX-XXXX</strong></div>
+      <div style="border:1px solid var(--light-rule);padding:.5rem .8rem;grid-column:1/-1;"><span style="color:var(--muted);">DOI</span><br><strong>${doi}</strong></div>
+    </div>
     <div class="modal-abs-label">Abstrak</div>
     <p class="modal-abs">${d.abstract||'—'}</p>
     <div style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);margin-bottom:1.2rem;"><strong>Kata Kunci:</strong> ${d.keywords||'—'}</div>
-    ${d.pdfLink?`<a class="modal-dl" href="${d.pdfLink}" target="_blank">↓ Download PDF Artikel</a>`:'<span style="font-size:.8rem;color:var(--muted);font-style:italic;">PDF belum tersedia.</span>'}
+    <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
+      ${d.pdfLink?`<a class="modal-dl" href="${d.pdfLink}" target="_blank">↓ Download PDF Artikel</a>`:'<span style="font-size:.8rem;color:var(--muted);font-style:italic;">PDF belum tersedia.</span>'}
+    </div>
   `;
   document.getElementById('art-modal').classList.add('open');
   document.body.style.overflow='hidden';
@@ -515,13 +534,24 @@ async function loadArticles(){
     const arts=(data.articles||[]).filter(a=>a.status==='published');
     const el=document.getElementById('articles-list');
     if(!arts.length){el.innerHTML='<div class="empty">Belum ada artikel yang diterbitkan.<br><span style="font-size:.85rem;display:block;margin-top:.5rem;">Artikel akan segera hadir.</span></div>';return;}
-    arts.forEach(a=>{$cache[a.id]=a;});
-    el.innerHTML=[...arts].reverse().map(a=>{
+    const sorted=[...arts].reverse();
+    sorted.forEach(a=>{$cache[a.id]=a;});
+    el.innerHTML=sorted.map((a,idx)=>{
       const abs=a.abstract?(a.abstract.length>300?a.abstract.substring(0,300)+'...':a.abstract):'';
+      const artNum=String(sorted.length-idx).padStart(3,'0');
+      const pubDate=a.createdAt?new Date(a.createdAt).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'}):'—';
+      const doi=a.doi||('10.00000/aporia.v'+(a.volume||'1')+'i'+(a.number||'1')+'.'+artNum);
       return `<article class="featured-article">
-        <div class="article-vol-badge">${a.topic||'—'} · ${a.year||new Date().getFullYear()}</div>
+        <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.7rem;">
+          <span class="article-vol-badge" style="margin-bottom:0;">${a.topic||'—'} · ${a.volume||'Vol. 1'}, ${a.number||'No. 1'} · ${a.year||new Date().getFullYear()}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--light-rule);">|</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);">📅 ${pubDate}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--light-rule);">|</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);">ISSN: 2XXX-XXXX</span>
+        </div>
         <div class="article-title-h" onclick="openArticle('${a.id}')">${a.title}</div>
         <div class="article-authors">${a.author}${a.affiliation?' · '+a.affiliation:''}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);margin-bottom:.8rem;letter-spacing:.05em;">DOI: ${doi}</div>
         <p class="article-abstract">${abs}</p>
         <div class="article-keywords"><strong>Kata Kunci:</strong> ${a.keywords||'—'}</div>
         <div class="article-actions" style="justify-content:space-between;">
@@ -562,6 +592,18 @@ async function loadHighlights(){
 
 loadArticles();
 loadHighlights();
+
+// Timeout fallback 5 detik
+setTimeout(()=>{
+  const el=document.getElementById('articles-list');
+  if(el && el.innerHTML.includes('Memuat')){
+    el.innerHTML='<div class="empty">⚠️ Server lambat atau data belum tersedia.<br><span style="font-size:.85rem;">Coba refresh halaman.</span></div>';
+  }
+  const hl=document.getElementById('highlight-grid');
+  if(hl && hl.innerHTML.includes('Memuat')){
+    hl.innerHTML='<div class="empty" style="color:#a89880;grid-column:1/-1;">Belum ada artikel sorotan.</div>';
+  }
+},5000);
 
 function igStoryShare(e){
   e.preventDefault();
